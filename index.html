@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pytest-data documentation &mdash; pytest-data  documentation</title>
+    
+    <link rel="stylesheet" href="static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="pytest-data  documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">pytest-data  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pytest-data-documentation">
+<h1>pytest-data documentation<a class="headerlink" href="#pytest-data-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre>pip install pytest-data
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-pytest_data">
+<span id="documentation"></span><h2>Documentation<a class="headerlink" href="#module-pytest_data" title="Permalink to this headline">¶</a></h2>
+<p>Useful functions for managing data for pytest fixtures.</p>
+<dl class="function">
+<dt id="pytest_data.get_data">
+<tt class="descclassname">pytest_data.</tt><tt class="descname">get_data</tt><big>(</big><em>request</em>, <em>attribute_name</em>, <em>default_data={}</em><big>)</big><a class="reference internal" href="modules/pytest_data.html#get_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytest_data.get_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns merged data from module, class and function. The most highest
+priority have data nearest to test code. It means that data on function
+have top priority, then class, then module and at last <tt class="docutils literal"><span class="pre">default_data</span></tt>.</p>
+<p>Example of fixture:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@pytest.fixture</span>
+<span class="k">def</span> <span class="nf">client</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">client_data</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span><span class="n">reqeust</span><span class="p">,</span> <span class="s">&#39;client_data&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Jerry&#39;</span><span class="p">,</span> <span class="s">&#39;address&#39;</span><span class="p">:</span> <span class="s">&#39;somewhere&#39;</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">Client</span><span class="p">(</span><span class="n">client_data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And example how to use data in your test:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">client_data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Sheldon&#39;</span><span class="p">,</span> <span class="s">&#39;age&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">}</span>
+
+<span class="k">class</span> <span class="nc">ClientTest</span><span class="p">:</span>
+    <span class="n">client_data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;iq&#39;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span> <span class="s">&#39;foo&#39;</span><span class="p">:</span> <span class="s">&#39;bar&#39;</span><span class="p">}</span>
+
+    <span class="nd">@use_data</span><span class="p">(</span><span class="n">client_data</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;foo&#39;</span><span class="p">:</span> <span class="s">&#39;baz&#39;</span><span class="p">})</span>
+    <span class="k">def</span> <span class="nf">test_foo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s">&#39;Sheldon&#39;</span>
+        <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">address</span> <span class="o">==</span> <span class="s">&#39;somewhere&#39;</span>
+        <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">age</span> <span class="o">==</span> <span class="mi">30</span>
+        <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">iq</span> <span class="o">==</span> <span class="mi">200</span>
+        <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">foo</span> <span class="o">==</span> <span class="s">&#39;baz&#39;</span>
+</pre></div>
+</div>
+<p>Most of the time you will need only dictionary but sometimes is needed
+list of dictionaries. It is supported as well but you need to know how
+it works. It will find longest list and rest of them will just cycle around.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@pytest.fixture</span>
+<span class="k">def</span> <span class="nf">clients</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">clients_data</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span><span class="n">reqeust</span><span class="p">,</span> <span class="s">&#39;client_data&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Jerry&#39;</span><span class="p">})</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">Client</span><span class="p">(</span><span class="n">client_data</span><span class="p">)</span> <span class="k">for</span> <span class="n">client_data</span> <span class="ow">in</span> <span class="n">clients_data</span><span class="p">]</span>
+
+<span class="n">client_data</span> <span class="o">=</span> <span class="p">[{</span><span class="s">&#39;age&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">},</span> <span class="p">{</span><span class="s">&#39;age&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">},</span> <span class="p">{</span><span class="s">&#39;age&#39;</span><span class="p">:</span> <span class="mi">40</span><span class="p">}]</span>
+
+<span class="nd">@use_data</span><span class="p">(</span><span class="n">client_data</span><span class="o">=</span><span class="p">[{</span><span class="s">&#39;foo&#39;</span><span class="p">:</span> <span class="s">&#39;bar&#39;</span><span class="p">,</span> <span class="s">&#39;foo&#39;</span><span class="p">:</span> <span class="s">&#39;baz&#39;</span><span class="p">}])</span>
+<span class="k">def</span> <span class="nf">test_foo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clients</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">clients</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">clients</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">clients</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">assert</span> <span class="n">clients</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">age</span> <span class="o">==</span> <span class="mi">20</span>
+    <span class="k">assert</span> <span class="n">clients</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">foo</span> <span class="o">==</span> <span class="s">&#39;bar&#39;</span>
+    <span class="k">assert</span> <span class="n">clients</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">age</span> <span class="o">==</span> <span class="mi">30</span>
+    <span class="k">assert</span> <span class="n">clients</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">foo</span> <span class="o">==</span> <span class="s">&#39;baz&#39;</span>
+    <span class="k">assert</span> <span class="n">clients</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">age</span> <span class="o">==</span> <span class="mi">40</span>
+    <span class="k">assert</span> <span class="n">clients</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">foo</span> <span class="o">==</span> <span class="s">&#39;bar&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytest_data.use_data">
+<tt class="descclassname">pytest_data.</tt><tt class="descname">use_data</tt><big>(</big><em>**data</em><big>)</big><a class="reference internal" href="modules/pytest_data.html#use_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytest_data.use_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator make sexier assaigning of fixture data on function. Instead of
+writing this code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_foo</span><span class="p">():</span>
+    <span class="k">pass</span>
+<span class="n">test_foo</span><span class="o">.</span><span class="n">client_data</span> <span class="o">=</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>you can write this one. It&#8217;s good that used data are visible on top of
+test function and not somewhere at the end.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@use_data</span><span class="p">(</span><span class="n">client_data</span><span class="o">=</span><span class="p">{</span><span class="o">...</span><span class="p">})</span>
+<span class="k">def</span> <span class="nf">test_foo</span><span class="p">():</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">pytest-data documentation</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#module-pytest_data">Documentation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">pytest-data  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Michal Horejsek.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
