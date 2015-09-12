@@ -8,7 +8,7 @@ except ImportError:
 
 setup(
     name='pytest-data',
-    version='0.1',
+    version='0.2',
     packages=['pytest_data'],
 
     url='https://github.com/horejsek/python-pytest-data',
@@ -27,4 +27,11 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
+
+    # the following makes a plugin available to pytest
+    entry_points = {
+        'pytest11': [
+            'data = pytest_data.plugin',
+        ]
+    },
 )
