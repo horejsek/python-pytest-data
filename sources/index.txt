@@ -11,5 +11,5 @@ Installation
 Documentation
 *************
 
-.. automodule:: pytest_data
+.. automodule:: pytest_data.functions
     :members:

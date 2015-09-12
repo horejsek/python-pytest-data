@@ -52,12 +52,12 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="module-pytest_data">
-<span id="documentation"></span><h2>Documentation<a class="headerlink" href="#module-pytest_data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-pytest_data.functions">
+<span id="documentation"></span><h2>Documentation<a class="headerlink" href="#module-pytest_data.functions" title="Permalink to this headline">¶</a></h2>
 <p>Useful functions for managing data for pytest fixtures.</p>
 <dl class="function">
-<dt id="pytest_data.get_data">
-<tt class="descclassname">pytest_data.</tt><tt class="descname">get_data</tt><big>(</big><em>request</em>, <em>attribute_name</em>, <em>default_data={}</em><big>)</big><a class="reference internal" href="modules/pytest_data.html#get_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytest_data.get_data" title="Permalink to this definition">¶</a></dt>
+<dt id="pytest_data.functions.get_data">
+<tt class="descclassname">pytest_data.functions.</tt><tt class="descname">get_data</tt><big>(</big><em>request</em>, <em>attribute_name</em>, <em>default_data={}</em><big>)</big><a class="reference internal" href="modules/pytest_data/functions.html#get_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytest_data.functions.get_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns merged data from module, class and function. The most highest
 priority have data nearest to test code. It means that data on function
 have top priority, then class, then module and at last <tt class="docutils literal"><span class="pre">default_data</span></tt>.</p>
@@ -107,8 +107,8 @@ it works. It will find longest list and rest of them will just cycle around.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="pytest_data.use_data">
-<tt class="descclassname">pytest_data.</tt><tt class="descname">use_data</tt><big>(</big><em>**data</em><big>)</big><a class="reference internal" href="modules/pytest_data.html#use_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytest_data.use_data" title="Permalink to this definition">¶</a></dt>
+<dt id="pytest_data.functions.use_data">
+<tt class="descclassname">pytest_data.functions.</tt><tt class="descname">use_data</tt><big>(</big><em>**data</em><big>)</big><a class="reference internal" href="modules/pytest_data/functions.html#use_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytest_data.functions.use_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator make sexier assaigning of fixture data on function. Instead of
 writing this code:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_foo</span><span class="p">():</span>
@@ -125,6 +125,43 @@ test function and not somewhere at the end.</p>
 </div>
 </dd></dl>
 
+<dl class="function">
+<dt id="pytest_data.functions.use_data_parametrize">
+<tt class="descclassname">pytest_data.functions.</tt><tt class="descname">use_data_parametrize</tt><big>(</big><em>**data</em><big>)</big><a class="reference internal" href="modules/pytest_data/functions.html#use_data_parametrize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytest_data.functions.use_data_parametrize" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#pytest_data.functions.use_data" title="pytest_data.functions.use_data"><tt class="xref py py-func docutils literal"><span class="pre">use_data()</span></tt></a> mixed with pytest&#8217;s parametrize. The best way how to
+descrabe it is to show some code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@use_data_parametrize</span><span class="p">(</span><span class="n">client</span><span class="o">=</span><span class="p">[{</span><span class="o">...</span><span class="p">},</span> <span class="p">{</span><span class="o">...</span><span class="p">}],</span> <span class="n">user</span><span class="o">=</span><span class="p">[{</span><span class="o">...</span><span class="p">},</span> <span class="p">{</span><span class="o">...</span><span class="p">}])</span>
+<span class="k">def</span> <span class="nf">test_foo</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="mi">0</span>
+
+<span class="nd">@pytest.fixture</span>
+<span class="k">def</span> <span class="nf">client</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">get_data</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;client_data&#39;</span><span class="p">,</span> <span class="p">{</span><span class="o">...</span><span class="p">})</span>
+
+<span class="nd">@pytest.fixture</span>
+<span class="k">def</span> <span class="nf">user</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">get_data</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;user_data&#39;</span><span class="p">,</span> <span class="p">{</span><span class="o">...</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>And it will call test <tt class="docutils literal"><span class="pre">test_foo</span></tt> four times, for every combination of
+client and user. As you would expect by pytest&#8217;s mark parametrize.</p>
+<div class="highlight-none"><div class="highlight"><pre>========= FAILURES ==========
+-- test_foo[client0-user0] --
+-- test_foo[client0-user1] --
+-- test_foo[client1-user0] --
+-- test_foo[client1-user1] --
+</pre></div>
+</div>
+<p>Just note that in <a class="reference internal" href="#pytest_data.functions.use_data" title="pytest_data.functions.use_data"><tt class="xref py py-func docutils literal"><span class="pre">use_data()</span></tt></a> is used as key <tt class="docutils literal"><span class="pre">atribute_name</span></tt>
+defined in fixture by calling <a class="reference internal" href="#pytest_data.functions.get_data" title="pytest_data.functions.get_data"><tt class="xref py py-func docutils literal"><span class="pre">get_data()</span></tt></a> whereas here is used
+fixture name. Because pytest need to assign params to fixtures. Data passed
+to this method is then found in fixture&#8217;s <tt class="docutils literal"><span class="pre">request.param</span></tt> instead of
+<tt class="docutils literal"><span class="pre">request.function.attribute_name</span></tt>.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.2.</span></p>
+</div>
+</dd></dl>
+
 </div>
 </div>
 
@@ -138,7 +175,7 @@ test function and not somewhere at the end.</p>
   <ul>
 <li><a class="reference internal" href="#">pytest-data documentation</a><ul>
 <li><a class="reference internal" href="#installation">Installation</a></li>
-<li><a class="reference internal" href="#module-pytest_data">Documentation</a></li>
+<li><a class="reference internal" href="#module-pytest_data.functions">Documentation</a></li>
 </ul>
 </li>
 </ul>

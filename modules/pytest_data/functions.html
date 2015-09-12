@@ -1,0 +1,276 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pytest_data.functions &mdash; pytest-data  documentation</title>
+    
+    <link rel="stylesheet" href="../../static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../static/jquery.js"></script>
+    <script type="text/javascript" src="../../static/underscore.js"></script>
+    <script type="text/javascript" src="../../static/doctools.js"></script>
+    <link rel="top" title="pytest-data  documentation" href="../../index.html" />
+    <link rel="up" title="pytest_data" href="../pytest_data.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pytest-data  documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pytest_data.html" accesskey="U">pytest_data</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pytest_data.functions</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Useful functions for managing data for pytest fixtures.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">cycle</span><span class="p">,</span> <span class="n">islice</span><span class="p">,</span> <span class="n">izip_longest</span> <span class="k">as</span> <span class="n">zip_longest</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">cycle</span><span class="p">,</span> <span class="n">islice</span><span class="p">,</span> <span class="n">zip_longest</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;get_data&#39;</span><span class="p">,</span> <span class="s">&#39;use_data&#39;</span><span class="p">,</span> <span class="s">&#39;use_data_parametrize&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_data"><a class="viewcode-back" href="../../index.html#pytest_data.functions.get_data">[docs]</a><span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">default_data</span><span class="o">=</span><span class="p">{}):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns merged data from module, class and function. The most highest</span>
+<span class="sd">    priority have data nearest to test code. It means that data on function</span>
+<span class="sd">    have top priority, then class, then module and at last ``default_data``.</span>
+
+<span class="sd">    Example of fixture:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        @pytest.fixture</span>
+<span class="sd">        def client(request):</span>
+<span class="sd">            client_data = get_data(reqeust, &#39;client_data&#39;, {&#39;name&#39;: &#39;Jerry&#39;, &#39;address&#39;: &#39;somewhere&#39;})</span>
+<span class="sd">            return Client(client_data)</span>
+
+<span class="sd">    And example how to use data in your test:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        client_data = {&#39;name&#39;: &#39;Sheldon&#39;, &#39;age&#39;: 30}</span>
+
+<span class="sd">        class ClientTest:</span>
+<span class="sd">            client_data = {&#39;iq&#39;: 200, &#39;foo&#39;: &#39;bar&#39;}</span>
+
+<span class="sd">            @use_data(client_data={&#39;foo&#39;: &#39;baz&#39;})</span>
+<span class="sd">            def test_foo(self, client):</span>
+<span class="sd">                assert client.name == &#39;Sheldon&#39;</span>
+<span class="sd">                assert client.address == &#39;somewhere&#39;</span>
+<span class="sd">                assert client.age == 30</span>
+<span class="sd">                assert client.iq == 200</span>
+<span class="sd">                assert client.foo == &#39;baz&#39;</span>
+
+<span class="sd">    Most of the time you will need only dictionary but sometimes is needed</span>
+<span class="sd">    list of dictionaries. It is supported as well but you need to know how</span>
+<span class="sd">    it works. It will find longest list and rest of them will just cycle around.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        @pytest.fixture</span>
+<span class="sd">        def clients(request):</span>
+<span class="sd">            clients_data = get_data(reqeust, &#39;client_data&#39;, {&#39;name&#39;: &#39;Jerry&#39;})</span>
+<span class="sd">            return [Client(client_data) for client_data in clients_data]</span>
+
+<span class="sd">        client_data = [{&#39;age&#39;: 20}, {&#39;age&#39;: 30}, {&#39;age&#39;: 40}]</span>
+
+<span class="sd">        @use_data(client_data=[{&#39;foo&#39;: &#39;bar&#39;, &#39;foo&#39;: &#39;baz&#39;}])</span>
+<span class="sd">        def test_foo(self, clients):</span>
+<span class="sd">            assert clients[0].name == clients[1].name == clients[2].name</span>
+<span class="sd">            assert clients[0].age == 20</span>
+<span class="sd">            assert clients[0].foo == &#39;bar&#39;</span>
+<span class="sd">            assert clients[1].age == 30</span>
+<span class="sd">            assert clients[1].foo == &#39;baz&#39;</span>
+<span class="sd">            assert clients[2].age == 40</span>
+<span class="sd">            assert clients[2].foo == &#39;bar&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">TARGETS</span> <span class="o">=</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">module</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">cls</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">function</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">getter</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_getter</span><span class="p">,</span> <span class="n">attribute_name</span><span class="o">=</span><span class="n">attribute_name</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">{})</span>
+        <span class="n">dicts</span> <span class="o">=</span> <span class="p">[</span><span class="n">default_data</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">getter</span><span class="p">,</span> <span class="n">TARGETS</span><span class="p">))</span> <span class="o">+</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;param&#39;</span><span class="p">,</span> <span class="p">{})]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">_merge</span><span class="p">(</span><span class="o">*</span><span class="n">dicts</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default_data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">getter</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_getter</span><span class="p">,</span> <span class="n">attribute_name</span><span class="o">=</span><span class="n">attribute_name</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[])</span>
+        <span class="n">dicts</span> <span class="o">=</span> <span class="p">[</span><span class="n">default_data</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">getter</span><span class="p">,</span> <span class="n">TARGETS</span><span class="p">))</span> <span class="o">+</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;param&#39;</span><span class="p">,</span> <span class="p">[])]</span>
+        <span class="n">max_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">len</span><span class="p">,</span> <span class="n">dicts</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">_merge</span><span class="p">(</span><span class="o">*</span><span class="n">datas</span><span class="p">)</span> <span class="k">for</span> <span class="n">datas</span> <span class="ow">in</span> <span class="n">islice</span><span class="p">(</span><span class="n">zip_longest</span><span class="p">(</span><span class="o">*</span><span class="nb">map</span><span class="p">(</span><span class="n">cycle</span><span class="p">,</span> <span class="n">dicts</span><span class="p">)),</span> <span class="n">max_len</span><span class="p">)]</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;{} is not supported&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">default_data</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">data</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_getter</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">default</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get value of ``attribute_name`` from ``target``. If it&#39;s not specified,</span>
+<span class="sd">    return ``default``. Also check that value is of same type as ``default``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">value_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">default</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">value_type</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;{}.{} should be {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">value_type</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">value</span>
+
+
+<span class="k">def</span> <span class="nf">_merge</span><span class="p">(</span><span class="o">*</span><span class="n">dicts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Merge dictionaries together. Last one have the biggest priority.</span>
+<span class="sd">    Order should be: default_data, module_data, cls_data, function_data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dicts</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">item</span><span class="p">:</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+
+<div class="viewcode-block" id="use_data"><a class="viewcode-back" href="../../index.html#pytest_data.functions.use_data">[docs]</a><span class="k">def</span> <span class="nf">use_data</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decorator make sexier assaigning of fixture data on function. Instead of</span>
+<span class="sd">    writing this code:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        def test_foo():</span>
+<span class="sd">            pass</span>
+<span class="sd">        test_foo.client_data = {...}</span>
+
+<span class="sd">    you can write this one. It&#39;s good that used data are visible on top of</span>
+<span class="sd">    test function and not somewhere at the end.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        @use_data(client_data={...})</span>
+<span class="sd">        def test_foo():</span>
+<span class="sd">            pass</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span>
+    <span class="k">return</span> <span class="n">wrapper</span>
+
+</div>
+<div class="viewcode-block" id="use_data_parametrize"><a class="viewcode-back" href="../../index.html#pytest_data.functions.use_data_parametrize">[docs]</a><span class="k">def</span> <span class="nf">use_data_parametrize</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :py:func:`use_data` mixed with pytest&#39;s parametrize. The best way how to</span>
+<span class="sd">    descrabe it is to show some code:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        @use_data_parametrize(client=[{...}, {...}], user=[{...}, {...}])</span>
+<span class="sd">        def test_foo(client, user):</span>
+<span class="sd">            assert 0</span>
+
+<span class="sd">        @pytest.fixture</span>
+<span class="sd">        def client(request):</span>
+<span class="sd">            return get_data(request, &#39;client_data&#39;, {...})</span>
+
+<span class="sd">        @pytest.fixture</span>
+<span class="sd">        def user(request):</span>
+<span class="sd">            return get_data(request, &#39;user_data&#39;, {...})</span>
+
+<span class="sd">    And it will call test ``test_foo`` four times, for every combination of</span>
+<span class="sd">    client and user. As you would expect by pytest&#39;s mark parametrize.</span>
+
+<span class="sd">    .. code-block:: none</span>
+
+<span class="sd">        ========= FAILURES ==========</span>
+<span class="sd">        -- test_foo[client0-user0] --</span>
+<span class="sd">        -- test_foo[client0-user1] --</span>
+<span class="sd">        -- test_foo[client1-user0] --</span>
+<span class="sd">        -- test_foo[client1-user1] --</span>
+
+<span class="sd">    Just note that in :py:func:`use_data` is used as key ``atribute_name``</span>
+<span class="sd">    defined in fixture by calling :py:func:`get_data` whereas here is used</span>
+<span class="sd">    fixture name. Because pytest need to assign params to fixtures. Data passed</span>
+<span class="sd">    to this method is then found in fixture&#39;s ``request.param`` instead of</span>
+<span class="sd">    ``request.function.attribute_name``.</span>
+
+<span class="sd">    .. versionadded:: 0.2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="n">func</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">func</span>
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">pytest-data  documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../pytest_data.html" >pytest_data</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Michal Horejsek.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
