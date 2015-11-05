@@ -168,14 +168,21 @@ def _get_data(default, module=None, cls=None, function=None):
 
 
 def test_use_data_func_stays_same():
-    def func():
+    def test_func():
         pass
-    res_func = use_data(foo=42)(func)
-    assert res_func == func
+    res_func = use_data(foo=42)(test_func)
+    assert res_func == test_func
 
 
 def test_use_data_func_has_data():
+    def test_func():
+        pass
+    res_func = use_data(foo=42)(test_func)
+    assert res_func.foo == 42
+
+
+def test_use_data_can_be_used_only_with_tests():
     def func():
         pass
-    res_func = use_data(foo=42)(func)
-    assert res_func.foo == 42
+    with pytest.raises(AssertionError):
+        use_data(foo=42)(func)
