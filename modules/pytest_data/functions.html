@@ -180,8 +180,14 @@
 <span class="sd">        @use_data(client_data={...})</span>
 <span class="sd">        def test_foo():</span>
 <span class="sd">            pass</span>
+
+<span class="sd">    .. versionchanged:: 0.3</span>
+<span class="sd">        ``use_data`` can be used only for tests, not fixtures. So since version 0.3</span>
+<span class="sd">        there is check that it&#39;s used only with tests (function starts with `test`).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;test&#39;</span><span class="p">),</span> <span class="s">&#39;use_data can be used only for tests&#39;</span>
+
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">func</span>
