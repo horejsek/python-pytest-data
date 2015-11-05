@@ -130,8 +130,14 @@ def use_data(**data):
         @use_data(client_data={...})
         def test_foo():
             pass
+
+    .. versionchanged:: 0.3
+        ``use_data`` can be used only for tests, not fixtures. So since version 0.3
+        there is check that it's used only with tests (function starts with `test`).
     """
     def wrapper(func):
+        assert func.__name__.startswith('test'), 'use_data can be used only for tests'
+
         for key, value in data.items():
             setattr(func, key, value)
         return func
