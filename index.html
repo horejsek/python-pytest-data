@@ -60,7 +60,8 @@
 <tt class="descclassname">pytest_data.functions.</tt><tt class="descname">get_data</tt><big>(</big><em>request</em>, <em>attribute_name</em>, <em>default_data={}</em><big>)</big><a class="reference internal" href="modules/pytest_data/functions.html#get_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pytest_data.functions.get_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns merged data from module, class and function. The most highest
 priority have data nearest to test code. It means that data on function
-have top priority, then class, then module and at last <tt class="docutils literal"><span class="pre">default_data</span></tt>.</p>
+have top priority, then class, then module, then param of request
+and at last <tt class="docutils literal"><span class="pre">default_data</span></tt>.</p>
 <p>Example of fixture:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="nd">@pytest.fixture</span>
 <span class="k">def</span> <span class="nf">client</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
@@ -102,6 +103,15 @@ it works. It will find longest list and rest of them will just cycle around.</p>
     <span class="k">assert</span> <span class="n">clients</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">foo</span> <span class="o">==</span> <span class="s">&#39;baz&#39;</span>
     <span class="k">assert</span> <span class="n">clients</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">age</span> <span class="o">==</span> <span class="mi">40</span>
     <span class="k">assert</span> <span class="n">clients</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">foo</span> <span class="o">==</span> <span class="s">&#39;bar&#39;</span>
+</pre></div>
+</div>
+<p>It also works with parametrized fixture. Following fixture will then call each
+test twice for two different types of user and you are still able to modify some
+data of user when needed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@pytest.fixture</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="p">[{</span><span class="s">&#39;registred&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">},</span> <span class="p">{</span><span class="s">&#39;registred&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}])</span>
+<span class="k">def</span> <span class="nf">user</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">user_data</span> <span class="o">=</span> <span class="n">get_dat</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;user_data&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Jerry&#39;</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">User</span><span class="p">(</span><span class="n">user_data</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>

@@ -67,7 +67,8 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns merged data from module, class and function. The most highest</span>
 <span class="sd">    priority have data nearest to test code. It means that data on function</span>
-<span class="sd">    have top priority, then class, then module and at last ``default_data``.</span>
+<span class="sd">    have top priority, then class, then module, then param of request</span>
+<span class="sd">    and at last ``default_data``.</span>
 
 <span class="sd">    Example of fixture:</span>
 
@@ -117,17 +118,28 @@
 <span class="sd">            assert clients[1].foo == &#39;baz&#39;</span>
 <span class="sd">            assert clients[2].age == 40</span>
 <span class="sd">            assert clients[2].foo == &#39;bar&#39;</span>
+
+<span class="sd">    It also works with parametrized fixture. Following fixture will then call each</span>
+<span class="sd">    test twice for two different types of user and you are still able to modify some</span>
+<span class="sd">    data of user when needed:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        @pytest.fixture(params=[{&#39;registred&#39;: True}, {&#39;registred&#39;: False}])</span>
+<span class="sd">        def user(request):</span>
+<span class="sd">            user_data = get_dat(request, &#39;user_data&#39;, {&#39;name&#39;: &#39;Jerry&#39;})</span>
+<span class="sd">            return User(user_data)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">TARGETS</span> <span class="o">=</span> <span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">module</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">cls</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">function</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="n">getter</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_getter</span><span class="p">,</span> <span class="n">attribute_name</span><span class="o">=</span><span class="n">attribute_name</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">{})</span>
-        <span class="n">dicts</span> <span class="o">=</span> <span class="p">[</span><span class="n">default_data</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">getter</span><span class="p">,</span> <span class="n">TARGETS</span><span class="p">))</span> <span class="o">+</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;param&#39;</span><span class="p">,</span> <span class="p">{})]</span>
+        <span class="n">dicts</span> <span class="o">=</span> <span class="p">[</span><span class="n">default_data</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">getter</span><span class="p">,</span> <span class="n">TARGETS</span><span class="p">))</span> <span class="o">+</span> <span class="p">[</span><span class="n">_getter</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;param&#39;</span><span class="p">,</span> <span class="p">{})]</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">_merge</span><span class="p">(</span><span class="o">*</span><span class="n">dicts</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default_data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="n">getter</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_getter</span><span class="p">,</span> <span class="n">attribute_name</span><span class="o">=</span><span class="n">attribute_name</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[])</span>
-        <span class="n">dicts</span> <span class="o">=</span> <span class="p">[</span><span class="n">default_data</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">getter</span><span class="p">,</span> <span class="n">TARGETS</span><span class="p">))</span> <span class="o">+</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;param&#39;</span><span class="p">,</span> <span class="p">[])]</span>
+        <span class="n">dicts</span> <span class="o">=</span> <span class="p">[</span><span class="n">default_data</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">getter</span><span class="p">,</span> <span class="n">TARGETS</span><span class="p">))</span> <span class="o">+</span> <span class="p">[</span><span class="n">_getter</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;param&#39;</span><span class="p">,</span> <span class="p">[])]</span>
         <span class="n">max_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">len</span><span class="p">,</span> <span class="n">dicts</span><span class="p">))</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">_merge</span><span class="p">(</span><span class="o">*</span><span class="n">datas</span><span class="p">)</span> <span class="k">for</span> <span class="n">datas</span> <span class="ow">in</span> <span class="n">islice</span><span class="p">(</span><span class="n">zip_longest</span><span class="p">(</span><span class="o">*</span><span class="nb">map</span><span class="p">(</span><span class="n">cycle</span><span class="p">,</span> <span class="n">dicts</span><span class="p">)),</span> <span class="n">max_len</span><span class="p">)]</span>
 
