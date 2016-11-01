@@ -17,7 +17,8 @@ def get_data(request, attribute_name, default_data={}):
     """
     Returns merged data from module, class and function. The most highest
     priority have data nearest to test code. It means that data on function
-    have top priority, then class, then module and at last ``default_data``.
+    have top priority, then class, then module, then param of request
+    and at last ``default_data``.
 
     Example of fixture:
 
@@ -67,17 +68,28 @@ def get_data(request, attribute_name, default_data={}):
             assert clients[1].foo == 'baz'
             assert clients[2].age == 40
             assert clients[2].foo == 'bar'
+
+    It also works with parametrized fixture. Following fixture will then call each
+    test twice for two different types of user and you are still able to modify some
+    data of user when needed:
+
+    .. code-block:: python
+
+        @pytest.fixture(params=[{'registred': True}, {'registred': False}])
+        def user(request):
+            user_data = get_dat(request, 'user_data', {'name': 'Jerry'})
+            return User(user_data)
     """
     TARGETS = (request.module, request.cls, request.function)
 
     if isinstance(default_data, dict):
         getter = partial(_getter, attribute_name=attribute_name, default={})
-        dicts = [default_data] + list(map(getter, TARGETS)) + [getattr(request, 'param', {})]
+        dicts = [default_data] + list(map(getter, TARGETS)) + [_getter(request, 'param', {})]
         data = _merge(*dicts)
 
     elif isinstance(default_data, list):
         getter = partial(_getter, attribute_name=attribute_name, default=[])
-        dicts = [default_data] + list(map(getter, TARGETS)) + [getattr(request, 'param', [])]
+        dicts = [default_data] + list(map(getter, TARGETS)) + [_getter(request, 'param', [])]
         max_len = max(map(len, dicts))
         data = [_merge(*datas) for datas in islice(zip_longest(*map(cycle, dicts)), max_len)]
 

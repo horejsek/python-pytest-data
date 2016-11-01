@@ -8,7 +8,7 @@ except ImportError:
 
 setup(
     name='pytest-data',
-    version='0.3',
+    version='0.4',
     packages=['pytest_data'],
 
     url='https://github.com/horejsek/python-pytest-data',
