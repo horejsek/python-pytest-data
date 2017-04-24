@@ -26,7 +26,7 @@ def get_data(request, attribute_name, default_data={}):
 
         @pytest.fixture
         def client(request):
-            client_data = get_data(reqeust, 'client_data', {'name': 'Jerry', 'address': 'somewhere'})
+            client_data = get_data(request, 'client_data', {'name': 'Jerry', 'address': 'somewhere'})
             return Client(client_data)
 
     And example how to use data in your test:
@@ -186,7 +186,7 @@ def use_data_parametrize(**data):
         -- test_foo[client1-user0] --
         -- test_foo[client1-user1] --
 
-    Just note that in :py:func:`use_data` is used as key ``atribute_name``
+    Just note that in :py:func:`use_data` is used as key ``attribute_name``
     defined in fixture by calling :py:func:`get_data` whereas here is used
     fixture name. Because pytest need to assign params to fixtures. Data passed
     to this method is then found in fixture's ``request.param`` instead of
