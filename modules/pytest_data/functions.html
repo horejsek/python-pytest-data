@@ -76,7 +76,7 @@
 
 <span class="sd">        @pytest.fixture</span>
 <span class="sd">        def client(request):</span>
-<span class="sd">            client_data = get_data(reqeust, &#39;client_data&#39;, {&#39;name&#39;: &#39;Jerry&#39;, &#39;address&#39;: &#39;somewhere&#39;})</span>
+<span class="sd">            client_data = get_data(request, &#39;client_data&#39;, {&#39;name&#39;: &#39;Jerry&#39;, &#39;address&#39;: &#39;somewhere&#39;})</span>
 <span class="sd">            return Client(client_data)</span>
 
 <span class="sd">    And example how to use data in your test:</span>
@@ -236,7 +236,7 @@
 <span class="sd">        -- test_foo[client1-user0] --</span>
 <span class="sd">        -- test_foo[client1-user1] --</span>
 
-<span class="sd">    Just note that in :py:func:`use_data` is used as key ``atribute_name``</span>
+<span class="sd">    Just note that in :py:func:`use_data` is used as key ``attribute_name``</span>
 <span class="sd">    defined in fixture by calling :py:func:`get_data` whereas here is used</span>
 <span class="sd">    fixture name. Because pytest need to assign params to fixtures. Data passed</span>
 <span class="sd">    to this method is then found in fixture&#39;s ``request.param`` instead of</span>

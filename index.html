@@ -65,7 +65,7 @@ and at last <tt class="docutils literal"><span class="pre">default_data</span></
 <p>Example of fixture:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="nd">@pytest.fixture</span>
 <span class="k">def</span> <span class="nf">client</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-    <span class="n">client_data</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span><span class="n">reqeust</span><span class="p">,</span> <span class="s">&#39;client_data&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Jerry&#39;</span><span class="p">,</span> <span class="s">&#39;address&#39;</span><span class="p">:</span> <span class="s">&#39;somewhere&#39;</span><span class="p">})</span>
+    <span class="n">client_data</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;client_data&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="s">&#39;Jerry&#39;</span><span class="p">,</span> <span class="s">&#39;address&#39;</span><span class="p">:</span> <span class="s">&#39;somewhere&#39;</span><span class="p">})</span>
     <span class="k">return</span> <span class="n">Client</span><span class="p">(</span><span class="n">client_data</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -166,7 +166,7 @@ client and user. As you would expect by pytest&#8217;s mark parametrize.</p>
 -- test_foo[client1-user1] --
 </pre></div>
 </div>
-<p>Just note that in <a class="reference internal" href="#pytest_data.functions.use_data" title="pytest_data.functions.use_data"><tt class="xref py py-func docutils literal"><span class="pre">use_data()</span></tt></a> is used as key <tt class="docutils literal"><span class="pre">atribute_name</span></tt>
+<p>Just note that in <a class="reference internal" href="#pytest_data.functions.use_data" title="pytest_data.functions.use_data"><tt class="xref py py-func docutils literal"><span class="pre">use_data()</span></tt></a> is used as key <tt class="docutils literal"><span class="pre">attribute_name</span></tt>
 defined in fixture by calling <a class="reference internal" href="#pytest_data.functions.get_data" title="pytest_data.functions.get_data"><tt class="xref py py-func docutils literal"><span class="pre">get_data()</span></tt></a> whereas here is used
 fixture name. Because pytest need to assign params to fixtures. Data passed
 to this method is then found in fixture&#8217;s <tt class="docutils literal"><span class="pre">request.param</span></tt> instead of
