@@ -54,7 +54,7 @@ def get_data(request, attribute_name, default_data={}):
 
         @pytest.fixture
         def clients(request):
-            clients_data = get_data(reqeust, 'client_data', {'name': 'Jerry'})
+            clients_data = get_data(request, 'client_data', {'name': 'Jerry'})
             return [Client(client_data) for client_data in clients_data]
 
         client_data = [{'age': 20}, {'age': 30}, {'age': 40}]
@@ -77,7 +77,7 @@ def get_data(request, attribute_name, default_data={}):
 
         @pytest.fixture(params=[{'registred': True}, {'registred': False}])
         def user(request):
-            user_data = get_dat(request, 'user_data', {'name': 'Jerry'})
+            user_data = get_data(request, 'user_data', {'name': 'Jerry'})
             return User(user_data)
     """
     TARGETS = (request.module, request.cls, request.function)
@@ -125,7 +125,7 @@ def _merge(*dicts):
 
 def use_data(**data):
     """
-    Decorator make sexier assaigning of fixture data on function. Instead of
+    Decorator make sexier assigning of fixture data on function. Instead of
     writing this code:
 
     .. code-block:: python
@@ -159,7 +159,7 @@ def use_data(**data):
 def use_data_parametrize(**data):
     """
     :py:func:`use_data` mixed with pytest's parametrize. The best way how to
-    descrabe it is to show some code:
+    describe it is to show some code:
 
     .. code-block:: python
 
