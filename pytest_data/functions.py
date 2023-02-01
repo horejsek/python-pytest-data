@@ -80,16 +80,24 @@ def get_data(request, attribute_name, default_data={}):
             user_data = get_data(request, 'user_data', {'name': 'Jerry'})
             return User(user_data)
     """
-    TARGETS = (request.module, request.cls, request.function)
+    targets = [request.module]
+    try:
+        targets.append(request.cls)
+    except AttributeError:
+        pass
+    try:
+        targets.append(request.function)
+    except AttributeError:
+        pass
 
     if isinstance(default_data, dict):
         getter = partial(_getter, attribute_name=attribute_name, default={})
-        dicts = [default_data] + list(map(getter, TARGETS)) + [_getter(request, 'param', {})]
+        dicts = [default_data] + list(map(getter, targets)) + [_getter(request, 'param', {})]
         data = _merge(*dicts)
 
     elif isinstance(default_data, list):
         getter = partial(_getter, attribute_name=attribute_name, default=[])
-        dicts = [default_data] + list(map(getter, TARGETS)) + [_getter(request, 'param', [])]
+        dicts = [default_data] + list(map(getter, targets)) + [_getter(request, 'param', [])]
         max_len = max(map(len, dicts))
         data = [_merge(*datas) for datas in islice(zip_longest(*map(cycle, dicts)), max_len)]
 
@@ -146,13 +154,16 @@ def use_data(**data):
     .. versionchanged:: 0.3
         ``use_data`` can be used only for tests, not fixtures. So since version 0.3
         there is check that it's used only with tests (function starts with `test`).
+    .. versionchanged:: 0.5
+        The restriction on usability on tests only has been removed. This is useful
+        for creating module-scoped fixtures.
     """
-    def wrapper(func):
-        assert func.__name__.startswith('test'), 'use_data can be used only for tests'
 
+    def wrapper(func):
         for key, value in data.items():
             setattr(func, key, value)
         return func
+
     return wrapper
 
 
